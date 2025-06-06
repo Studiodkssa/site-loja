@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All In Car Service - Estética Automotiva de Alto Padrão</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Premium Blue & Slate -->
+    <!-- Application Structure Plan: A single-page application (SPA) with a sticky top navigation for seamless user flow. The structure is thematic, divided into logical sections (Serviços, Películas, Vitrificação, PPF, Pacotes Personalizados, Contato), allowing users to quickly jump to their area of interest. This architecture was chosen over a linear page-by-page layout to create a modern, app-like experience that facilitates quick information retrieval and comparison, which is ideal for a premium, tech-savvy audience. Key interactions include tab-based content switching for Películas, a dynamic comparison chart, and a new LLM-powered custom package description generator. -->
+    <!-- Visualization & Content Choices: 1. Service Cards (HTML/CSS): Report Info -> Service descriptions and prices. Goal -> Inform. Method -> Interactive cards with hover effects. Justification -> Clean, organized, and easy to scan. 2. Películas Comparison (Chart.js Bar Chart & JS): Report Info -> Technical specs of window films (heat reduction %). Goal -> Compare. Method -> An interactive bar chart dynamically updates alongside detailed text blocks when a user selects a film type. Justification -> Visually comparing performance stats is far more effective and intuitive for users than reading a list of numbers, reinforcing the high-tech value proposition. 3. Custom Package Description (LLM via Gemini API & JS): Report Info -> User-selected services. Goal -> Engage & inform. Method -> User selects services, and an LLM generates a unique, tailored package description. Justification -> This feature offers a "wow" factor, personalizes the experience, and showcases advanced capabilities, allowing users to synthesize their own ideal service combinations. NO SVG/Mermaid is used, relying on Chart.js (Canvas) and structured HTML/CSS with Unicode characters for icons. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+        }
+        h1, h2, h3, .font-montserrat {
+            font-family: 'Montserrat', sans-serif;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #007BFF;
+            border-bottom-color: #007BFF;
+        }
+        .service-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .film-button {
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .film-button.active {
+            background-color: #007BFF;
+            color: white;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #007BFF;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <a href="#" class="text-2xl font-bold text-gray-800 font-montserrat">All In <span class="text-blue-600">Car Service</span></a>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#servicos" class="nav-link pb-1">Serviços</a>
+                    <a href="#peliculas" class="nav-link pb-1">Películas</a>
+                    <a href="#vitrificacao" class="nav-link pb-1">Vitrificação</a>
+                    <a href="#ppf" class="nav-link pb-1">PPF</a>
+                    <a href="#pacotes-personalizados" class="nav-link pb-1">Pacotes Personalizados ✨</a>
+                    <a href="#contato" class="nav-link pb-1">Contato</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-gray-800 focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="mobile-menu" class="hidden md:hidden mt-4">
+                <a href="#servicos" class="block py-2 px-4 text-sm hover:bg-gray-200 rounded">Serviços</a>
+                <a href="#peliculas" class="block py-2 px-4 text-sm hover:bg-gray-200 rounded">Películas</a>
+                <a href="#vitrificacao" class="block py-2 px-4 text-sm hover:bg-gray-200 rounded">Vitrificação</a>
+                <a href="#ppf" class="block py-2 px-4 text-sm hover:bg-gray-200 rounded">PPF</a>
+                <a href="#pacotes-personalizados" class="block py-2 px-4 text-sm hover:bg-gray-200 rounded">Pacotes Personalizados ✨</a>
+                <a href="#contato" class="block py-2 px-4 text-sm hover:bg-gray-200 rounded">Contato</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero" class="bg-gray-900 text-white text-center py-20 px-6" style="background-image: url('https://placehold.co/1920x1080/1a202c/ffffff?text='); background-size: cover; background-position: center;">
+            <div class="bg-black bg-opacity-50 rounded-lg p-8 max-w-4xl mx-auto">
+                <h1 class="text-4xl md:text-6xl font-bold mb-4 font-montserrat">Estética Automotiva de Alto Padrão</h1>
+                <p class="text-lg md:text-xl mb-8 text-gray-300">Transformando veículos, superando expectativas. Qualidade que você vê e sente.</p>
+                <a href="#contato" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300">Agende seu Serviço</a>
+            </div>
+        </section>
+
+        <section id="servicos" class="py-20">
+            <div class="container mx-auto px-6">
+                <h2 class="text-4xl font-bold text-center mb-4 font-montserrat">Serviços de Estética</h2>
+                <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">Oferecemos uma gama completa de serviços para cuidar de cada detalhe do seu veículo. Nossos processos utilizam os melhores produtos e técnicas para garantir um resultado impecável, restaurando e protegendo seu patrimônio.</p>
+                <div id="servicos-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                </div>
+            </div>
+        </section>
+
+        <section id="peliculas" class="py-20 bg-white">
+            <div class="container mx-auto px-6">
+                <h2 class="text-4xl font-bold text-center mb-4 font-montserrat">Películas de Proteção Solar</h2>
+                <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">Nossas películas de alta performance oferecem o equilíbrio perfeito entre conforto térmico, proteção solar, segurança e estilo. Explore nossas linhas para encontrar a solução ideal para você e seu veículo.</p>
+                <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-12">
+                </div>
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div id="film-details" class="bg-gray-50 p-8 rounded-lg shadow-inner">
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="filmChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="vitrificacao" class="py-20">
+            <div class="container mx-auto px-6">
+                <h2 class="text-4xl font-bold text-center mb-4 font-montserrat">Vitrificação Cerâmica</h2>
+                 <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">A vitrificação cria uma barreira de proteção ultra resistente sobre as superfícies do veículo. Este tratamento de alta tecnologia não só proporciona um brilho intenso e profundo, como também protege contra micro-riscos, raios UV e agentes químicos.</p>
+                <div id="vitrificacao-container" class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                </div>
+            </div>
+        </section>
+
+        <section id="ppf" class="py-20 bg-white">
+            <div class="container mx-auto px-6">
+                <h2 class="text-4xl font-bold text-center mb-4 font-montserrat">PPF - Película de Proteção de Pintura</h2>
+                <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">O PPF é a defesa definitiva para a pintura do seu carro. Esta película de poliuretano, praticamente invisível, absorve impactos de pedras, previne riscos, manchas e outros danos, preservando a originalidade e o valor do seu veículo.</p>
+                <div id="ppf-container" class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                </div>
+            </div>
+        </section>
+
+        <section id="pacotes-personalizados" class="py-20">
+            <div class="container mx-auto px-6">
+                <h2 class="text-4xl font-bold text-center mb-4 font-montserrat">Monte Seu Pacote Personalizado ✨</h2>
+                <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">Selecione os serviços que você mais deseja e deixe que nossa inteligência artificial crie uma descrição exclusiva, destacando os benefícios combinados para o seu veículo. A experiência All In Car Service, agora sob medida para você!</p>
+                
+                <div class="bg-white p-8 rounded-lg shadow-lg mb-12">
+                    <h3 class="text-2xl font-bold mb-4 font-montserrat">Serviços Selecionados:</h3>
+                    <div id="selected-services-list" class="flex flex-wrap gap-2 mb-4 min-h-[4rem] border-b pb-4">
+                        <p class="text-gray-500 italic" id="empty-selection-message">Nenhum serviço selecionado ainda. Clique em "Adicionar ao Pacote ✨" nos cartões de serviço.</p>
+                    </div>
+                    <div class="flex flex-col md:flex-row justify-center items-center gap-4">
+                        <button id="generate-package-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 flex items-center justify-center">
+                            Gerar Descrição do Pacote ✨
+                            <div id="spinner" class="spinner ml-3 hidden"></div>
+                        </button>
+                        <button id="clear-package-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-8 rounded-full text-lg transition duration-300">
+                            Limpar Seleção
+                        </button>
+                    </div>
+                </div>
+
+                <div id="package-description-output" class="bg-blue-50 p-8 rounded-lg shadow-inner hidden">
+                    <h3 class="text-2xl font-bold mb-4 text-blue-800 font-montserrat">Sua Descrição de Pacote Personalizada:</h3>
+                    <p id="generated-description" class="text-gray-800 leading-relaxed"></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="contato" class="py-20 bg-gray-800 text-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center">
+                    <h2 class="text-4xl font-bold mb-4 font-montserrat">Entre em Contato</h2>
+                    <p class="text-gray-300 mb-10">Estamos prontos para atender você. Agende seu horário e venha nos conhecer.</p>
+                </div>
+                <div class="max-w-4xl mx-auto bg-gray-900 rounded-lg p-8 grid md:grid-cols-2 gap-8 text-center md:text-left">
+                    <div class="space-y-4">
+                        <h3 class="text-2xl font-bold font-montserrat">All In Car Service</h3>
+                        <p><span>📍</span> Praça do Barbalho, 70 – Salvador/BA</p>
+                        <p><span>📞</span> (71) 99924-5513</p>
+                        <p><span>📧</span> studiodkssa@gmail.com</p>
+                        <p><span>📱</span> Instagram: <a href="#" class="text-blue-400 hover:text-blue-500">@allincarservice</a></p>
+                    </div>
+                    <div class="space-y-4">
+                        <h3 class="text-2xl font-bold font-montserrat">Horário de Atendimento</h3>
+                        <p><span>🕒</span> Segunda a sexta: 9h às 18h</p>
+                        <p><span>🕒</span> Sábado: 10h às 16h</p>
+                        <p class="mt-4 pt-4 border-t border-gray-700"><span>⚠️</span> Atendimento somente com agendamento prévio.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-900 text-white text-center py-6">
+        <p>&copy; 2025 All In Car Service. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const data = {
+                servicos: [
+                    { id: 'lavagem-tecnica', title: "Lavagem Técnica Detalhada", desc: "Lavagem com shampoo neutro, luvas de microfibra, limpeza de rodas e secagem técnica.", price: 120, type: "servico" },
+                    { id: 'descontaminacao', title: "Lavagem de Descontaminação", desc: "Remove piche, respingos de tinta, cola e outras impurezas da pintura.", price: 280, type: "servico" },
+                    { id: 'polimento-tecnico', title: "Polimento Técnico", desc: "Correção de micro-riscos e opacidade, devolvendo o brilho da pintura.", price: 750, type: "servico" },
+                    { id: 'coating-pintura', title: "Coating de Pintura e Materiais", desc: "Aplicação de proteção cerâmica de longa duração em pintura, rodas, couro e plásticos.", price: 1800, type: "servico" },
+                    { id: 'higienizacao-interna', title: "Higienização Interna Completa", desc: "Limpeza detalhada de bancos, carpetes e tetos, com uso de produtos bactericidas.", price: 450, type: "servico" },
+                    { id: 'lavagem-motor', title: "Lavagem de Motor", desc: "Limpeza técnica do motor com segurança para os componentes elétricos.", price: 300, type: "servico" },
+                ],
+                peliculas: [
+                    { 
+                        id: 'blue', name: "Window Blue", icon: '🔷', tagline: "Proteção invisível com tecnologia de última geração.", 
+                        desc: "Película quase transparente, com leve tonalidade azulada, ideal para quem deseja proteção térmica e solar sem escurecer os vidros.",
+                        indicacao: "Indicada para veículos de alto padrão ou clientes que priorizam discrição e tecnologia invisível.",
+                        specs: { calor: 89, uv: 99, vlt: 76, garantia: 'vitalícia'},
+                        prices: { laterais: 1300, parabrisa: 900, completo: 2000 }
+                    },
+                    { 
+                        id: 'premium', name: "Window Premium", icon: '🔸', tagline: "Alta proteção térmica com visual sofisticado.", 
+                        desc: "Película nanocerâmica com excelente equilíbrio entre desempenho e estética. Indicada para quem deseja conforto térmico sem abrir mão de um visual moderno e leve.",
+                        indicacao: "Disponível em diversas tonalidades (G5 a G50).",
+                        specs: { calor: 90, uv: 99, vlt: "Variável", garantia: 'vitalícia'},
+                        prices: { laterais: 800, parabrisa: 500, completo: 1200 }
+                    },
+                    { 
+                        id: 'protection', name: "Premium Total Protection", icon: '🔶', tagline: "O máximo em proteção térmica, solar e física.", 
+                        desc: "Essa versão acrescenta camada antivandalismo, ideal para motoristas que desejam o mais alto nível de segurança contra estilhaços em caso de colisão ou tentativa de furto.",
+                        indicacao: "Mantém fragmentos em caso de impacto, aumentando a segurança.",
+                        specs: { calor: 90, uv: 99, vlt: "Variável", garantia: 'vitalícia'},
+                        prices: { laterais: 1050, parabrisa: 700, completo: 1600 }
+                    },
+                    { 
+                        id: 'carbono', name: "Window Carbono", icon: '🟥', tagline: "Estilo esportivo e alta durabilidade.", 
+                        desc: "Película desenvolvida com partículas de nano carbono, oferece estética fumê escura com desempenho térmico razoável e excelente estabilidade de cor. Ideal para quem busca visual marcante com ótimo custo-benefício.",
+                        indicacao: "Alta resistência ao desbotamento e bolhas.",
+                        specs: { calor: 75, uv: 99, vlt: "Variável", garantia: '10+ anos'},
+                        prices: { laterais: 450, parabrisa: 300, completo: 600 }
+                    },
+                ],
+                vitrificacao: [
+                    { id: 'vit-pintura', title: "Vitrificação de Pintura", desc: "Proteção premium por 1, 3 ou 5 anos. Inclui lavagem, descontaminação e polimento técnico.", price: 1800, durabilidade: "Até 5 anos", type: "vitrificacao" },
+                    { id: 'vit-rodas', title: "Vitrificação de Rodas", desc: "Coating resistente ao calor e sujeira de freio.", price: 500, durabilidade: "12 a 18 meses", type: "vitrificacao" },
+                    { id: 'vit-couro', title: "Vitrificação de Couro", desc: "Limpeza, hidratação e selante cerâmico impermeabilizante.", price: 450, durabilidade: "6 a 12 meses", type: "vitrificacao" },
+                    { id: 'vit-plasticos', title: "Vitrificação de Plásticos", desc: "Restaura e protege contra raios UV, desbotamento e ressecamento.", price: 400, durabilidade: "Até 2 anos", type: "vitrificacao" },
+                ],
+                ppf: [
+                    { id: 'ppf-full', title: "Full Protection", desc: "Proteção completa para o veículo inteiro.", price: 18000, type: "ppf" },
+                    { id: 'ppf-frontal', title: "Proteção Frontal", desc: "Capô, para-choques e retrovisores.", price: 7000, type: "ppf" },
+                    { id: 'ppf-parcial', title: "Proteção Parcial", desc: "Soleiras, maçanetas, cantos de porta.", price: 2000, type: "ppf" },
+                ]
+            };
+
+            const allServices = [
+                ...data.servicos,
+                ...data.vitrificacao,
+                ...data.ppf
+            ];
+
+            let selectedPackageServices = [];
+
+            const servicosContainer = document.getElementById('servicos-container');
+            const vitrificacaoContainer = document.getElementById('vitrificacao-container');
+            const ppfContainer = document.getElementById('ppf-container');
+
+            function renderServiceCards(container, services, showAddButton = false) {
+                services.forEach(servico => {
+                    const card = document.createElement('div');
+                    card.className = 'service-card bg-white p-8 rounded-lg shadow-lg text-center flex flex-col justify-between';
+                    let priceDisplay = `<p class="text-2xl font-bold text-blue-600">A partir de R$ ${servico.price}</p>`;
+                    if (servico.durabilidade) {
+                        priceDisplay += `<p class="text-sm text-gray-500 mt-1">Durabilidade: ${servico.durabilidade}</p>`;
+                    }
+                    card.innerHTML = `
+                        <h3 class="text-2xl font-bold mb-4 font-montserrat">${servico.title}</h3>
+                        <p class="text-gray-600 mb-4 min-h-[4rem] flex-grow">${servico.desc}</p>
+                        ${priceDisplay}
+                        ${showAddButton ? `<button data-service-id="${servico.id}" class="add-to-package-btn mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full transition duration-300">Adicionar ao Pacote ✨</button>` : ''}
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            renderServiceCards(servicosContainer, data.servicos, true);
+            renderServiceCards(vitrificacaoContainer, data.vitrificacao, true);
+            renderServiceCards(ppfContainer, data.ppf, true);
+
+            const selectedServicesList = document.getElementById('selected-services-list');
+            const emptySelectionMessage = document.getElementById('empty-selection-message');
+            const generatePackageBtn = document.getElementById('generate-package-btn');
+            const clearPackageBtn = document.getElementById('clear-package-btn');
+            const packageDescriptionOutput = document.getElementById('package-description-output');
+            const generatedDescription = document.getElementById('generated-description');
+            const spinner = document.getElementById('spinner');
+
+            function updateSelectedServicesList() {
+                selectedServicesList.innerHTML = '';
+                if (selectedPackageServices.length === 0) {
+                    emptySelectionMessage.classList.remove('hidden');
+                } else {
+                    emptySelectionMessage.classList.add('hidden');
+                    selectedPackageServices.forEach(service => {
+                        const tag = document.createElement('span');
+                        tag.className = 'bg-blue-100 text-blue-800 text-sm font-semibold mr-2 px-2.5 py-0.5 rounded-full flex items-center';
+                        tag.innerHTML = `${service.title} <button data-service-id="${service.id}" class="remove-service-btn ml-2 text-blue-600 hover:text-blue-900">x</button>`;
+                        selectedServicesList.appendChild(tag);
+                    });
+                }
+            }
+
+            document.querySelectorAll('.add-to-package-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const serviceId = event.target.dataset.serviceId;
+                    const service = allServices.find(s => s.id === serviceId);
+                    if (service && !selectedPackageServices.some(s => s.id === serviceId)) {
+                        selectedPackageServices.push(service);
+                        updateSelectedServicesList();
+                    }
+                });
+            });
+
+            selectedServicesList.addEventListener('click', (event) => {
+                if (event.target.classList.contains('remove-service-btn')) {
+                    const serviceIdToRemove = event.target.dataset.serviceId;
+                    selectedPackageServices = selectedPackageServices.filter(s => s.id !== serviceIdToRemove);
+                    updateSelectedServicesList();
+                }
+            });
+
+            clearPackageBtn.addEventListener('click', () => {
+                selectedPackageServices = [];
+                updateSelectedServicesList();
+                packageDescriptionOutput.classList.add('hidden');
+                generatedDescription.textContent = '';
+            });
+
+            generatePackageBtn.addEventListener('click', async () => {
+                if (selectedPackageServices.length === 0) {
+                    generatedDescription.textContent = "Por favor, selecione pelo menos um serviço para gerar a descrição do pacote.";
+                    packageDescriptionOutput.classList.remove('hidden');
+                    return;
+                }
+
+                spinner.classList.remove('hidden');
+                generatePackageBtn.disabled = true;
+                generatedDescription.textContent = '';
+                packageDescriptionOutput.classList.remove('hidden');
+
+                const serviceTitles = selectedPackageServices.map(s => s.title).join(', ');
+                const prompt = `Gere uma descrição atraente e premium para um pacote de estética automotiva que inclui os seguintes serviços: ${serviceTitles}. Destaque os benefícios combinados e a qualidade superior da All In Car Service. Seja conciso e persuasivo, usando no máximo 150 palavras.`;
+
+                try {
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const response = await fetch(apiUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        generatedDescription.textContent = text;
+                    } else {
+                        generatedDescription.textContent = "Não foi possível gerar a descrição. Tente novamente.";
+                    }
+                } catch (error) {
+                    console.error("Erro ao chamar a API Gemini:", error);
+                    generatedDescription.textContent = "Ocorreu um erro ao gerar a descrição. Por favor, tente novamente.";
+                } finally {
+                    spinner.classList.add('hidden');
+                    generatePackageBtn.disabled = false;
+                }
+            });
+
+            updateSelectedServicesList();
+
+            const filmButtonsContainer = document.querySelector('#peliculas .flex');
+            const filmDetailsContainer = document.getElementById('film-details');
+            let filmChart;
+
+            function updateFilmDetails(filmId) {
+                const film = data.peliculas.find(f => f.id === filmId);
+                filmDetailsContainer.innerHTML = `
+                    <h3 class="text-3xl font-bold mb-2 font-montserrat">${film.icon} ${film.name}</h3>
+                    <p class="text-lg text-blue-600 font-semibold mb-4">${film.tagline}</p>
+                    <p class="text-gray-700 mb-4">${film.desc}</p>
+                    <p class="text-gray-600 bg-blue-50 p-3 rounded-md mb-6">💡 ${film.indicacao}</p>
+                    <div class="space-y-2">
+                        <h4 class="text-xl font-semibold mb-2 font-montserrat">Detalhes Técnicos:</h4>
+                        <p class="flex justify-between"><span>Redução de Calor:</span> <span class="font-bold">${film.specs.calor}%</span></p>
+                        <p class="flex justify-between"><span>Bloqueio de Raios UV:</span> <span class="font-bold">${film.specs.uv}%</span></p>
+                        <p class="flex justify-between"><span>Transmissão de Luz Visível:</span> <span class="font-bold">${film.specs.vlt}${typeof film.specs.vlt === 'number' ? '%' : ''}</span></p>
+                        <p class="flex justify-between"><span>Garantia:</span> <span class="font-bold capitalize">${film.specs.garantia}</span></p>
+                    </div>
+                     <div class="mt-6 pt-4 border-t">
+                        <h4 class="text-xl font-semibold mb-2 font-montserrat">Valores:</h4>
+                        <p class="flex justify-between"><span>Laterais + Traseira:</span> <span class="font-bold">R$ ${film.prices.laterais}</span></p>
+                        <p class="flex justify-between"><span>Para-brisa:</span> <span class="font-bold">R$ ${film.prices.parabrisa}</span></p>
+                        <p class="flex justify-between text-blue-600"><span>Combo Completo:</span> <span class="font-bold">R$ ${film.prices.completo}</span></p>
+                    </div>
+                `;
+                
+                document.querySelectorAll('.film-button').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.filmid === filmId);
+                });
+
+                updateChartHighlight(filmId);
+            }
+
+            function updateChartHighlight(filmId) {
+                const filmIndex = data.peliculas.findIndex(f => f.id === filmId);
+                filmChart.data.datasets[0].backgroundColor = data.peliculas.map((_, index) => index === filmIndex ? '#007BFF' : '#D1D5DB');
+                filmChart.update();
+            }
+
+            const chartCtx = document.getElementById('filmChart').getContext('2d');
+            filmChart = new Chart(chartCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.peliculas.map(f => f.name),
+                    datasets: [{
+                        label: 'Redução de Calor (%)',
+                        data: data.peliculas.map(f => f.specs.calor),
+                        backgroundColor: '#D1D5DB',
+                        borderColor: '#9CA3AF',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Eficiência (%)'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    const label = this.getLabelForValue(value);
+                                    return label.length > 16 ? label.substring(0, 16) + '...' : label;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` Redução de Calor: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            data.peliculas.forEach(film => {
+                const button = document.createElement('button');
+                button.className = 'film-button py-2 px-4 rounded-full border-2 border-gray-300 hover:bg-gray-200';
+                button.textContent = film.name;
+                button.dataset.filmid = film.id;
+                button.addEventListener('click', () => updateFilmDetails(film.id));
+                filmButtonsContainer.appendChild(button);
+            });
+            updateFilmDetails(data.peliculas[0].id);
+
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('main section');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 60) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').substring(1) === current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
