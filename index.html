@@ -9,10 +9,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Premium Blue & Slate -->
-    <!-- Application Structure Plan: A single-page application (SPA) with a sticky top navigation for seamless user flow. The structure is thematic, divided into logical sections (Serviços, Películas, Vitrificação, PPF, Pacotes Personalizados, Contato), allowing users to quickly jump to their area of interest. This architecture was chosen over a linear page-by-page layout to create a modern, app-like experience that facilitates quick information retrieval and comparison, which is ideal for a premium, tech-savvy audience. Key interactions include tab-based content switching for Películas, a dynamic comparison chart, and a new LLM-powered custom package description generator. -->
-    <!-- Visualization & Content Choices: 1. Service Cards (HTML/CSS): Report Info -> Service descriptions and prices. Goal -> Inform. Method -> Interactive cards with hover effects. Justification -> Clean, organized, and easy to scan. 2. Películas Comparison (Chart.js Bar Chart & JS): Report Info -> Technical specs of window films (heat reduction %). Goal -> Compare. Method -> An interactive bar chart dynamically updates alongside detailed text blocks when a user selects a film type. Justification -> Visually comparing performance stats is far more effective and intuitive for users than reading a list of numbers, reinforcing the high-tech value proposition. 3. Custom Package Description (LLM via Gemini API & JS): Report Info -> User-selected services. Goal -> Engage & inform. Method -> User selects services, and an LLM generates a unique, tailored package description. Justification -> This feature offers a "wow" factor, personalizes the experience, and showcases advanced capabilities, allowing users to synthesize their own ideal service combinations. NO SVG/Mermaid is used, relying on Chart.js (Canvas) and structured HTML/CSS with Unicode characters for icons. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -102,11 +98,11 @@
     </header>
 
     <main>
-        <section id="hero" class="bg-gray-900 text-white text-center py-20 px-6" style="background-image: url('https://placehold.co/1920x1080/1a202c/ffffff?text='); background-size: cover; background-position: center;">
+        <section id="hero" class="bg-gray-900 text-white text-center py-20 px-6" style="background-image: url('https://images.unsplash.com/photo-1617083999123-2d1a2a47e3a3?q=80&w=1920&auto=format&fit=crop'); background-size: cover; background-position: center;">
             <div class="bg-black bg-opacity-50 rounded-lg p-8 max-w-4xl mx-auto">
                 <h1 class="text-4xl md:text-6xl font-bold mb-4 font-montserrat">Estética Automotiva de Alto Padrão</h1>
                 <p class="text-lg md:text-xl mb-8 text-gray-300">Transformando veículos, superando expectativas. Qualidade que você vê e sente.</p>
-                <a href="#contato" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300">Agende seu Serviço</a>
+                <a href="https://wa.me/5571999245513?text=Ol%C3%A1!%20Visitei%20o%20site%20da%20All%20In%20Car%20Service%20e%20gostaria%20de%20mais%20informa%C3%A7%C3%B5es." target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300">Agende seu Serviço</a>
             </div>
         </section>
 
@@ -160,10 +156,14 @@
                 
                 <div class="bg-white p-8 rounded-lg shadow-lg mb-12">
                     <h3 class="text-2xl font-bold mb-4 font-montserrat">Serviços Selecionados:</h3>
-                    <div id="selected-services-list" class="flex flex-wrap gap-2 mb-4 min-h-[4rem] border-b pb-4">
+                    <div id="selected-services-list" class="flex flex-wrap gap-2 mb-4 border-b pb-4">
                         <p class="text-gray-500 italic" id="empty-selection-message">Nenhum serviço selecionado ainda. Clique em "Adicionar ao Pacote ✨" nos cartões de serviço.</p>
                     </div>
-                    <div class="flex flex-col md:flex-row justify-center items-center gap-4">
+                    
+                    <div class="text-right font-bold text-2xl mt-4 font-montserrat" id="package-total-price">
+                        </div>
+                    
+                    <div class="flex flex-col md:flex-row justify-center items-center gap-4 mt-6">
                         <button id="generate-package-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 flex items-center justify-center">
                             Gerar Descrição do Pacote ✨
                             <div id="spinner" class="spinner ml-3 hidden"></div>
@@ -190,7 +190,7 @@
                 <div class="max-w-4xl mx-auto bg-gray-900 rounded-lg p-8 grid md:grid-cols-2 gap-8 text-center md:text-left">
                     <div class="space-y-4">
                         <h3 class="text-2xl font-bold font-montserrat">All In Car Service</h3>
-                        <p><span>📍</span> Praça do Barbalho, 70 – Salvador/BA</p>
+                        <p><span>📍</span> <a href="https://g.co/kgs/haXVUnX" target="_blank" class="text-blue-400 hover:text-blue-500 hover:underline">Praça do Barbalho, 70 – Salvador/BA</a></p>
                         <p><span>📞</span> (71) 99924-5513</p>
                         <p><span>📧</span> studiodkssa@gmail.com</p>
                         <p><span>📱</span> Instagram: <a href="#" class="text-blue-400 hover:text-blue-500">@allincarservice</a></p>
@@ -281,7 +281,7 @@
                 services.forEach(servico => {
                     const card = document.createElement('div');
                     card.className = 'service-card bg-white p-8 rounded-lg shadow-lg text-center flex flex-col justify-between';
-                    let priceDisplay = `<p class="text-2xl font-bold text-blue-600">A partir de R$ ${servico.price}</p>`;
+                    let priceDisplay = `<p class="text-2xl font-bold text-blue-600">A partir de R$ ${servico.price.toFixed(2)}</p>`;
                     if (servico.durabilidade) {
                         priceDisplay += `<p class="text-sm text-gray-500 mt-1">Durabilidade: ${servico.durabilidade}</p>`;
                     }
@@ -306,11 +306,13 @@
             const packageDescriptionOutput = document.getElementById('package-description-output');
             const generatedDescription = document.getElementById('generated-description');
             const spinner = document.getElementById('spinner');
+            const packageTotalPriceElement = document.getElementById('package-total-price');
 
             function updateSelectedServicesList() {
                 selectedServicesList.innerHTML = '';
                 if (selectedPackageServices.length === 0) {
                     emptySelectionMessage.classList.remove('hidden');
+                    selectedServicesList.appendChild(emptySelectionMessage);
                 } else {
                     emptySelectionMessage.classList.add('hidden');
                     selectedPackageServices.forEach(service => {
@@ -319,6 +321,14 @@
                         tag.innerHTML = `${service.title} <button data-service-id="${service.id}" class="remove-service-btn ml-2 text-blue-600 hover:text-blue-900">x</button>`;
                         selectedServicesList.appendChild(tag);
                     });
+                }
+                
+                const totalPrice = selectedPackageServices.reduce((total, service) => total + service.price, 0);
+                
+                if (totalPrice > 0) {
+                    packageTotalPriceElement.textContent = `Total do Pacote: R$ ${totalPrice.toFixed(2).replace('.', ',')}`;
+                } else {
+                    packageTotalPriceElement.textContent = '';
                 }
             }
 
@@ -367,8 +377,15 @@
                     let chatHistory = [];
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     const payload = { contents: chatHistory };
-                    const apiKey = "";
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const apiKey = "AIzaSyDg9jeQuPGY_W033dKr_WYk4xyZevcPQVk"; 
+
+                    if (!apiKey) {
+                        throw new Error("A chave da API do Gemini não foi configurada.");
+                    }
+
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                    
                     const response = await fetch(apiUrl, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
@@ -376,17 +393,18 @@
                             });
                     const result = await response.json();
 
-                    if (result.candidates && result.candidates.length > 0 &&
-                        result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
+                    if (result.candidates && result.candidates.length > 0) {
                         const text = result.candidates[0].content.parts[0].text;
                         generatedDescription.textContent = text;
-                    } else {
-                        generatedDescription.textContent = "Não foi possível gerar a descrição. Tente novamente.";
+                    } else if (result.error) {
+                         generatedDescription.textContent = `Erro da API: ${result.error.message}. Verifique sua chave de API e as configurações da conta.`;
+                    }
+                    else {
+                        generatedDescription.textContent = "Não foi possível gerar a descrição. A resposta da API estava vazia. Tente novamente.";
                     }
                 } catch (error) {
                     console.error("Erro ao chamar a API Gemini:", error);
-                    generatedDescription.textContent = "Ocorreu um erro ao gerar a descrição. Por favor, tente novamente.";
+                    generatedDescription.textContent = `Ocorreu um erro ao gerar a descrição: ${error.message}. Verifique o console para mais detalhes.`;
                 } finally {
                     spinner.classList.add('hidden');
                     generatePackageBtn.disabled = false;
@@ -415,9 +433,9 @@
                     </div>
                      <div class="mt-6 pt-4 border-t">
                         <h4 class="text-xl font-semibold mb-2 font-montserrat">Valores:</h4>
-                        <p class="flex justify-between"><span>Laterais + Traseira:</span> <span class="font-bold">R$ ${film.prices.laterais}</span></p>
-                        <p class="flex justify-between"><span>Para-brisa:</span> <span class="font-bold">R$ ${film.prices.parabrisa}</span></p>
-                        <p class="flex justify-between text-blue-600"><span>Combo Completo:</span> <span class="font-bold">R$ ${film.prices.completo}</span></p>
+                        <p class="flex justify-between"><span>Laterais + Traseira:</span> <span class="font-bold">R$ ${film.prices.laterais.toFixed(2).replace('.', ',')}</span></p>
+                        <p class="flex justify-between"><span>Para-brisa:</span> <span class="font-bold">R$ ${film.prices.parabrisa.toFixed(2).replace('.', ',')}</span></p>
+                        <p class="flex justify-between text-blue-600"><span>Combo Completo:</span> <span class="font-bold">R$ ${film.prices.completo.toFixed(2).replace('.', ',')}</span></p>
                     </div>
                 `;
                 
